@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Родословное древо семьи Владимировых</title>
+  <style>
+    :root {
+      --bg: #0f141c;
+      --card-bg: #1a2230;
+      --card-border: #2d3b50;
+      --text-main: #f0f4f8;
+      --text-muted: #94a3b8;
+      --accent-pat: #38bdf8;
+      --accent-pat-border: #0284c7;
+      --accent-pat-bg: rgba(56, 189, 248, 0.08);
+      --accent-mat: #34d399;
+      --accent-mat-border: #059669;
+      --accent-mat-bg: rgba(52, 211, 153, 0.08);
+      --accent-gold: #fbbf24;
+      --line-color: #3b4d66;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at 50% 10%, #172033 0%, var(--bg) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 30px 20px 80px;
+    }
+
+    .header {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto 40px;
+    }
+
+    .badge-case {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent-pat);
+      border-radius: 20px;
+      color: var(--accent-pat);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #232e42;
+      border-color: var(--accent-pat);
+    }
+
+    .tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      max-width: 1350px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .gen-row {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      width: 100%;
+      position: relative;
+    }
+
+    .gen-label {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      opacity: 0.6;
+    }
+
+    .cluster {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+
+    .card {
+      width: 270px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .card.pat {
+      border-top: 4px solid var(--accent-pat);
+      background: linear-gradient(180deg, var(--accent-pat-bg) 0%, var(--card-bg) 40%);
+    }
+
+    .card.mat {
+      border-top: 4px solid var(--accent-mat);
+      background: linear-gradient(180deg, var(--accent-mat-bg) 0%, var(--card-bg) 40%);
+    }
+
+    .card.proband {
+      border: 2px solid var(--accent-gold);
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.12) 0%, var(--card-bg) 50%);
+      width: 300px;
+    }
+
+    .card-role {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card.pat .card-role { color: var(--accent-pat); }
+    .card.mat .card-role { color: var(--accent-mat); }
+    .card.proband .card-role { color: var(--accent-gold); }
+
+    .card-name {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      color: #cbd5e1;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .tag.war {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .tag.factory {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .tag.award {
+      background: rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fde68a;
+    }
+
+    .tag.status {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: #7dd3fc;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 999;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal {
+      background: #172030;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      max-width: 680px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--text-main); }
+    .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .modal-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+
+    .modal-section {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #232f42;
+    }
+
+    .modal-section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent-pat);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .modal-section p, .modal-section li {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .modal-section ul { padding-left: 20px; }
+
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent-pat-border);
+      border-radius: 8px;
+      color: var(--accent-pat);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+
+    .doc-link:hover {
+      background: rgba(56, 189, 248, 0.2);
+    }
+
+    .connector-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: -10px 0;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="badge-case">Кейс: vladimirov-tree • Доказательный протокол</div>
+    <h1>Генеалогическое древо рода Владимировых</h1>
+    <p class="subtitle">5 поколений: от пробанда Антона Валерьевича до мещан г. Владимира середины XIX века</p>
+    <div class="controls">
+      <button class="btn" onclick="filterBranch('all')">Все ветви</button>
+      <button class="btn" onclick="filterBranch('pat')">Отцовская линия (Владимировы)</button>
+      <button class="btn" onclick="filterBranch('mat')">Материнская линия (Акимовы)</button>
+    </div>
+  </div>
+
+  <div class="tree-container">
+
+    <!-- ПОКОЛЕНИЕ V: Прапрадедушки -->
+    <div class="gen-row">
+      <div class="gen-label">Колено V</div>
+
+      <div class="cluster branch-pat">
+        <div class="card pat" onclick="showPerson('ivan_anc')">
+          <div class="card-role">Прапрадед по отцу <span>P-0013</span></div>
+          <div class="card-name">Владимиров Иван</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1845–1875 г.р.</div>
+            <div class="meta-row">📍 г. Владимир</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Мещанин г. Владимира</span>
+            <span class="tag">Отец Василия Ивановича</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('ivan_rybin')">
+          <div class="card-role">Прапрадед <span>P-0020</span></div>
+          <div class="card-name">Рыбин Иван</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1840–1865 г.р.</div>
+            <div class="meta-row">📍 д. Ивачево, Бронницкий уезд</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Крестьянин Московской губ.</span>
+            <span class="tag">Отец Александры (Рыбиной)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-text">▼ поколение прадедушек и прабабушек ▼</div>
+
+    <!-- ПОКОЛЕНИЕ IV: Прадедушки и Прабабушки -->
+    <div class="gen-row">
+      <div class="gen-label">Колено IV</div>
+
+      <div class="cluster branch-pat">
+        <div class="card pat" onclick="showPerson('vasily')">
+          <div class="card-role">Прадед по отцу <span>P-0010</span></div>
+          <div class="card-name">Владимиров Василий Иванович</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1875–1895 г.р.</div>
+            <div class="meta-row">📍 г. Владимир • Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Мещанин г. Владимира</span>
+            <span class="tag">Дом Ситникова (Москва)</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('aleksandra')">
+          <div class="card-role">Прабабушка по отцу <span>P-0012</span></div>
+          <div class="card-name">Владимирова (Рыбина) Александра Ивановна</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1875–1895 г.р.</div>
+            <div class="meta-row">📍 Бронницкий уезд • Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Урожд. Рыбина</span>
+            <span class="tag">д. Ивачево / Уварово</span>
+            <span class="tag">Мать Аркадия</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('grigory_rybin')">
+          <div class="card-role">Брат прабабушки <span>P-0021</span></div>
+          <div class="card-name">Рыбин Григорий Иванович</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1875–1895 г.р.</div>
+            <div class="meta-row">📍 д. Ивачево • Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Крестный Аркадия (1914)</span>
+            <span class="tag">Паспорт № 43 от 1913 г.</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('alexandr_rybin')">
+          <div class="card-role">Брат прабабушки <span>P-0022</span></div>
+          <div class="card-name">Рыбин Александр Иванович</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 1889 г.р.</div>
+            <div class="meta-row">📍 Лобановская волость</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Дело П-70795</span>
+            <span class="tag">Связь требует проверки листами дела</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('lykova')">
+          <div class="card-role">Крестная мать <span>P-0023</span></div>
+          <div class="card-name">Ольга Николаевна [Лякова/Лыкова?]</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 дата не установлена</div>
+            <div class="meta-row">📍 Москва, 1914</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Восприемница Аркадия</span>
+            <span class="tag">Чтение фамилии проверяется</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('lykov')">
+          <div class="card-role">Муж крестной матери <span>P-0024</span></div>
+          <div class="card-name">Лыков [имя не установлено]</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 дата не установлена</div>
+            <div class="meta-row">📍 Москва, 1914</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Канцелярский чиновник</span>
+            <span class="tag">Личность требует поиска</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cluster branch-mat">
+        <div class="card mat" onclick="showPerson('simon')">
+          <div class="card-role">Прадед по матери <span>P-0011</span></div>
+          <div class="card-name">Акимов Симон</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1870–1890 г.р.</div>
+            <div class="meta-row">📍 Российская империя</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Отец Ивана Симоновича</span>
+            <span class="tag">Редкое имя Симон</span>
+          </div>
+        </div>
+
+        <div class="card mat" onclick="showPerson('muranov')">
+          <div class="card-role">Прадед по матери <span>P-0014</span></div>
+          <div class="card-name">Муранов [Отец Галины]</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1870–1900 г.р.</div>
+            <div class="meta-row">📍 Москва / Российская империя</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Отец бабушки Галины</span>
+            <span class="tag">Род Мурановых</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-text">▼ поколение дедушек и бабушек ▼</div>
+
+    <!-- ПОКОЛЕНИЕ III: Дедушки и Бабушки -->
+    <div class="gen-row">
+      <div class="gen-label">Колено III</div>
+
+      <!-- Ветвь отца -->
+      <div class="cluster branch-pat">
+        <div class="card pat" onclick="showPerson('arkady')">
+          <div class="card-role">Дед по отцу <span>P-0006</span></div>
+          <div class="card-name">Владимиров Аркадий Васильевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 12(25).01.1914 • Кр. 22.01.1914</div>
+            <div class="meta-row">📍 Москва • Гусь-Хрустальный</div>
+          </div>
+          <div class="tags">
+            <span class="tag war">ВОВ • Гв. лейтенант</span>
+            <span class="tag award">2x Красная Звезда</span>
+            <span class="tag">Метрика № 19 (ЦГА Москвы)</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('olga')">
+          <div class="card-role">Бабушка по отцу <span>P-0007</span></div>
+          <div class="card-name">Владимирова Ольга Михайловна</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1910–1927 г.р.</div>
+            <div class="meta-row">📍 Белоруссия (под Бобруйском)</div>
+          </div>
+          <div class="tags">
+            <span class="tag war">Уроженка Белоруссии</span>
+            <span class="tag">Супруга Аркадия</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ветвь матери -->
+      <div class="cluster branch-mat">
+        <div class="card mat" onclick="showPerson('ivan')">
+          <div class="card-role">Дед по матери <span>P-0008</span></div>
+          <div class="card-name">Акимов Иван Симонович</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1900–1920 г.р.</div>
+            <div class="meta-row">📍 Москва • Омск (1941–1942)</div>
+          </div>
+          <div class="tags">
+            <span class="tag factory">Завод им. Ильюшина (Ил)</span>
+            <span class="tag">Начальник цеха электрики</span>
+          </div>
+        </div>
+
+        <div class="card mat" onclick="showPerson('galina')">
+          <div class="card-role">Бабушка по матери <span>P-0009</span></div>
+          <div class="card-name">Акимова (Муранова) Галина</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1905–1925 г.р.</div>
+            <div class="meta-row">📍 Москва • Омск (эвакуация)</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Урожд. Муранова</span>
+            <span class="tag">Супруга Ивана</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-text">▼ поколение родителей ▼</div>
+
+    <!-- ПОКОЛЕНИЕ II: Родители, дяди и тети -->
+    <div class="gen-row">
+      <div class="gen-label">Колено II</div>
+
+      <div class="cluster branch-pat">
+        <div class="card pat" onclick="showPerson('valery')">
+          <div class="card-role">Отец <span>P-0002</span></div>
+          <div class="card-name">Владимиров Валерий Аркадьевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 07.03.1947</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag status">Выпускник МАИ 1971</span>
+            <span class="tag">Родители: Аркадий + Ольга</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('anatoliy')">
+          <div class="card-role">Дядя по отцу <span>P-0017</span></div>
+          <div class="card-name">Владимиров Анатолий Аркадьевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1940–1955 г.р.</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Брат отца Валерия</span>
+            <span class="tag">Дети: Петр, Жанна</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cluster branch-mat">
+        <div class="card mat" onclick="showPerson('elizaveta')">
+          <div class="card-role">Мать <span>P-0003</span></div>
+          <div class="card-name">Владимирова (Акимова) Елизавета Ивановна</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 06.03.1942</div>
+            <div class="meta-row">📍 Омск (в эвакуации)</div>
+          </div>
+          <div class="tags">
+            <span class="tag war">Эвакуация 1942</span>
+            <span class="tag">Родители: Иван + Галина</span>
+          </div>
+        </div>
+
+        <div class="card mat" onclick="showPerson('irina')">
+          <div class="card-role">Тетя по матери <span>P-0015</span></div>
+          <div class="card-name">Акимова Ирина Ивановна</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 ~1938–1955 г.р.</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Сестра матери Елизаветы</span>
+            <span class="tag">Сын: Александр</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-text">▼ поколение субъекта (пробанда), братьев, сестер и кузенов ▼</div>
+
+    <!-- ПОКОЛЕНИЕ I: Пробанд, брат и двоюродные -->
+    <div class="gen-row">
+      <div class="gen-label">Колено I</div>
+
+      <!-- Кузены по отцовской линии -->
+      <div class="cluster branch-pat">
+        <div class="card pat" onclick="showPerson('petr')">
+          <div class="card-role">Двоюродный брат <span>P-0018</span></div>
+          <div class="card-name">Владимиров Петр Анатольевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Сын Анатолия Аркадьевича</span>
+          </div>
+        </div>
+
+        <div class="card pat" onclick="showPerson('zhanna')">
+          <div class="card-role">Двоюродная сестра <span>P-0019</span></div>
+          <div class="card-name">Набережных (Владимирова) Жанна Анатольевна</div>
+          <div class="card-meta">
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Дочь Анатолия Аркадьевича</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Пробанд и родной брат -->
+      <div class="cluster">
+        <div class="card proband" onclick="showPerson('anton')">
+          <div class="card-role">Субъект (Пробанд) <span>P-0001</span></div>
+          <div class="card-name">Владимиров Антон Валерьевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 27.01.1978 (19:15)</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag award">Точка отсчета древа</span>
+          </div>
+        </div>
+
+        <div class="card" onclick="showPerson('mikhail')">
+          <div class="card-role">Брат <span>P-0004</span></div>
+          <div class="card-name">Владимиров Михаил Валерьевич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 12.04.1976</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Полнородный брат</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кузен по материнской линии -->
+      <div class="cluster branch-mat">
+        <div class="card mat" onclick="showPerson('aleksandr_akim')">
+          <div class="card-role">Двоюродный брат <span>P-0016</span></div>
+          <div class="card-name">Акимов Александр Игоревич</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 22.01.1973</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Сын Ирины Ивановны</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-text">▼ нисходящая линия ▼</div>
+
+    <!-- ПОКОЛЕНИЕ +1: Дети -->
+    <div class="gen-row">
+      <div class="gen-label">Дети</div>
+
+      <div class="cluster">
+        <div class="card" onclick="showPerson('marya')">
+          <div class="card-role">Дочь <span>P-0005</span></div>
+          <div class="card-name">Владимирова Марья Антоновна</div>
+          <div class="card-meta">
+            <div class="meta-row">📅 30.06.2007</div>
+            <div class="meta-row">📍 Москва</div>
+          </div>
+          <div class="tags">
+            <span class="tag">Дочь Антона</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Модальное окно деталей -->
+  <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-close" onclick="closeModal()">&times;</div>
+      <div class="modal-title" id="modalTitle">Имя</div>
+      <div class="modal-subtitle" id="modalSubtitle">Статус и ID</div>
+
+      <div class="modal-section" id="bioSection">
+        <div class="modal-section-title">Биографические данные</div>
+        <div id="modalBioContent"></div>
+      </div>
+
+      <div class="modal-section" id="evidenceSection">
+        <div class="modal-section-title">Источники и доказательная база</div>
+        <div id="modalEvidenceContent"></div>
+      </div>
+
+      <div class="modal-section" id="tasksSection">
+        <div class="modal-section-title">Следующие архивные шаги</div>
+        <div id="modalTasksContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      anton: {
+        title: "Владимиров Антон Валерьевич",
+        subtitle: "P-0001 • Жив • Пробанд (основной субъект исследования)",
+        bio: "<p><strong>Дата рождения:</strong> 27 января 1978 года, 19:15</p><p><strong>Место рождения:</strong> г. Москва</p><p><strong>Родители:</strong> отец — Владимиров Валерий Аркадьевич, мать — Владимирова (Акимова) Елизавета Ивановна.</p><p><strong>Дети:</strong> дочь Марья Антоновна (30.06.2007).</p>",
+        evidence: "<p><strong>Артефакт A-0001:</strong> Личные анкетные данные пробанда из запроса пользователя. Статус: <code>single-source</code>.</p>",
+        tasks: "<ul><li>Сверить данные со свидетельством о рождении (уточнить районный отдел ЗАГС г. Москвы).</li></ul>"
+      },
+      valery: {
+        title: "Владимиров Валерий Аркадьевич",
+        subtitle: "P-0002 • Отец пробанда • Выпускник МАИ",
+        bio: "<p><strong>Дата рождения:</strong> 07 марта 1947 года</p><p><strong>Место рождения:</strong> г. Москва</p><p><strong>Образование:</strong> Московский авиационный институт (МАИ), 6-й (Аэрокосмический) факультет, выпуск 1971 года (запись № 363).</p><p><strong>Родители:</strong> Владимиров Аркадий Васильевич и Владимирова Ольга Михайловна.</p><p><strong>Супруга:</strong> Владимирова (Акимова) Елизавета Ивановна.</p>",
+        evidence: "<p><strong>Артефакты A-0002, A-0013:</strong> Свидетельство сына, официальный реестр выпускников 6-го факультета МАИ.</p>",
+        tasks: "<ul><li>Запросить в МФЦ г. Москвы справку о рождении с ИНЫМИ СВЕДЕНИЯМИ.</li></ul>"
+      },
+      elizaveta: {
+        title: "Владимирова (Акимова) Елизавета Ивановна",
+        subtitle: "P-0003 • Мать пробанда",
+        bio: "<p><strong>Дата рождения:</strong> 06 марта 1942 года</p><p><strong>Место рождения:</strong> г. Омск (в эвакуации авиапредприятия из Москвы)</p><p><strong>Родители:</strong> Акимов Иван Симонович и Акимова Галина.</p><p><strong>Исторический контекст:</strong> Рождение в Омске непосредственно связано с эвакуацией московского авиастроения (заводы № 240 / 166) осенью 1941 года.</p>",
+        evidence: "<p><strong>Артефакты A-0002, A-0005:</strong> Свидетельство сына. Девичья фамилия — Акимова. Место рождения — Омск (эвакуация).</p>",
+        tasks: "<ul><li>Запросить актовую запись о рождении за март 1942 года в органах ЗАГС г. Омска (через ЕГР ЗАГС / МФЦ) с ИНЫМИ СВЕДЕНИЯМИ.</li><li>Проверить списки эвакуированных в Государственном архиве Омской области (ГАОО).</li></ul>"
+      },
+      arkady: {
+        title: "Владимиров Аркадий Васильевич",
+        subtitle: "P-0006 • Дед по отцу • Участник ВОВ, гвардии лейтенант",
+        bio: `<p><strong>Дата рождения:</strong> 12 января 1914 года (ст. ст.) / 25 января 1914 года (н. ст.).</p>
+              <p><strong>Дата крещения:</strong> 22 января 1914 года (актовая запись № 19 в метрической книге Москвы).</p>
+              <p><strong>Имянаречение:</strong> «Свят. преподобн. Аркадий, праздн. 26 января».</p>
+              <p><strong>Родители:</strong> Города Владимира мещанин Василий Иванович Владимиров и законная его жена Александра Ивановна.</p>
+              <p><strong>Адрес семьи в Москве (1914 г.):</strong> «Дом Ситникова».</p>
+              <p><strong>Крестные родители:</strong> крестьянин <a href="#" style="color:#60a5fa; text-decoration:underline;" onclick="showPerson('grigory_rybin'); return false;">Григорий Иванович Рыбин</a> (д. Уварово) и жена канцелярского чиновника <a href="#" style="color:#60a5fa; text-decoration:underline;" onclick="showPerson('lykova'); return false;">Ольга Николаевна [Лякова/Лыкова?]</a>.</p>
+              <p><strong>Призыв:</strong> Гусь-Хрустальный РВК Владимирской обл., май 1936 года.</p>
+              <p><strong>Боевой путь:</strong> 12-я гв. пушечная артиллерийская бригада (4 гв. тпад РВГК). Операция «Багратион» 1944 г., штурм Кёнигсберга и Пиллау 1945 г.</p>
+              <p><strong>Награды:</strong> Два ордена Красной Звезды (1944, 1945), Медаль «За победу над Германией».</p>`,
+        evidence: `<p><strong>Артефакты A-0003, A-0007, A-0010:</strong> Подлинная метрическая запись № 19 за 1914 год (ЦГА Москвы), УПК и наградные листы ЦА МО РФ.</p>
+                   <a class="doc-link" href="https://pamyat-naroda.ru/heroes/person-hero91369692/" target="_blank">🔗 Профиль на «Память Народа»</a>`,
+        tasks: "<ul><li>Запросить учетно-послужную карту (УПК) и личное дело офицера в ЦА МО (г. Подольск).</li></ul>"
+      },
+      olga: {
+        title: "Владимирова Ольга Михайловна",
+        subtitle: "P-0007 • Бабушка по отцу • Уроженка Белоруссии",
+        bio: "<p><strong>Место рождения:</strong> Белоруссия, под Бобруйском (семейное свидетельство; точный населённый пункт и приход не установлены).</p><p><strong>Супруг:</strong> Владимиров Аркадий Васильевич (1914 г.р.).</p><p><strong>Дети:</strong> Валерий Аркадьевич (07.03.1947), Анатолий Аркадьевич.</p><p><strong>Другие семейные сведения:</strong> по памяти семьи, часть отцовской родни происходила из района Пятигорска; конкретный предок не установлен.</p>",
+        evidence: "<p><strong>Артефакты A-0002, A-0012, A-0015:</strong> Семейные свидетельства внука о рождении бабушки под Бобруйском.</p>",
+        tasks: "<ul><li>Запросить в архивах ЗАГС г. Москвы запись о браке с Аркадием Васильевичем (~1935–1946 гг.) для выявления точного населенного пункта под Бобруйском и девичьей фамилии.</li><li>Поиск в Национальном историческом архиве Беларуси (НИАБ, г. Минск) по фондам Бобруйского уезда.</li></ul>"
+      },
+      galina: {
+        title: "Акимова (Муранова) Галина",
+        subtitle: "P-0009 • Бабушка по матери • Девичья фамилия Муранова",
+        bio: "<p><strong>Девичья фамилия:</strong> Муранова.</p><p><strong>Супруг:</strong> Акимов Иван Симонович (начальник цеха электрики з-да 'Ил').</p><p><strong>Дети:</strong> Елизавета Ивановна (родилась 06.03.1942 в Омске в период эвакуации).</p><p><strong>Эвакуация:</strong> В 1941–1942 гг. находилась в Омске вместе с мужем и заводом.</p>",
+        evidence: "<p><strong>Артефакты A-0002, A-0005, A-0011:</strong> Свидетельства внука об эвакуации и установлении девичьей фамилии Муранова.</p>",
+        tasks: "<ul><li>Запросить актовую запись о рождении дочери из ЗАГС г. Омска с иными сведениями (девичья фамилия и точный возраст Галины).</li><li>Поиск записи о браке Ивана Симоновича Акимова и Галины Мурановой в ЗАГС Москвы (~1930–1941 гг.).</li></ul>"
+      },
+      muranov: {
+        title: "Муранов [Отец Галины]",
+        subtitle: "P-0014 • Прадед по материнской линии • Род Мурановых",
+        bio: "<p>Отец бабушки по матери Акимовой (Мурановой) Галины.</p><p>Носитель старинной фамилии Муранов.</p>",
+        evidence: "<p><strong>Артефакт A-0011:</strong> Свидетельство внука об установлении девичьей фамилии бабушки — Муранова.</p>",
+        tasks: "<ul><li>Уточнить отчество бабушки Галины для установления имени ее отца.</li></ul>"
+      },
+      vasily: {
+        title: "Владимиров Василий Иванович",
+        subtitle: "P-0010 • Прадед по отцовской линии • Мещанин г. Владимира",
+        bio: `<p><strong>Сословие:</strong> Города Владимира мещанин.</p>
+              <p><strong>Супруга:</strong> Александра Ивановна Владимирова.</p>
+              <p><strong>Дети:</strong> Аркадий (родился 12.01.1914 в Москве, запись № 19).</p>
+              <p><strong>Место жительства:</strong> г. Владимир / Москва (в 1914 г. проживал в доме Ситникова).</p>
+              <p><strong>Отец:</strong> Иван Владимиров (мещанин г. Владимира).</p>`,
+        evidence: "<p><strong>Артефакт A-0010:</strong> Подлинная метрическая запись № 19 от января 1914 г. ЦГА Москвы: <em>«Города Владимира мещанин Василий Иванов Владимиров»</em>.</p>",
+        tasks: "<ul><li>Поиск в Государственном архиве Владимирской области (ГАВО) по фонду Мещанской управы г. Владимира (посемейные списки).</li><li>Поиск бракосочетания с Александрой Ивановной в церквях г. Владимира и Москвы (~1895–1913 гг.).</li></ul>"
+      },
+      aleksandra: {
+        title: "Владимирова (Рыбина) Александра Ивановна",
+        subtitle: "P-0012 • Прабабушка по отцовской линии • Урожд. Рыбина",
+        bio: `<p><strong>Девичья фамилия:</strong> Рыбина.</p>
+              <p><strong>Происхождение:</strong> Крестьянка деревни Ивачево (Уварово) Лобановской волости Бронницкого уезда Московской губернии.</p>
+              <p><strong>Супруг:</strong> Мещанин города Владимира Василий Иванович Владимиров.</p>
+              <p><strong>Дети:</strong> Аркадий Васильевич Владимиров (родился 12.01.1914 в Москве, запись № 19).</p>
+              <p><strong>Отец:</strong> Иван Рыбин.</p>
+              <p><strong>Братья:</strong> Григорий Иванович Рыбин (крестный сын Аркадия), Александр Иванович Рыбин (1889 г.р.).</p>`,
+        evidence: "<p><strong>Артефакты A-0010, A-0014:</strong> Метрическая запись № 19 от января 1914 г., паспорт № 43 от 1913 г., следственное дело П-70795 ГА РФ.</p>",
+        tasks: "<ul><li>Поиск в ревизских сказках 1858 г. и метрических книгах Лобановской волости Бронницкого уезда по роду Рыбиных.</li></ul>"
+      },
+      ivan_rybin: {
+        title: "Рыбин Иван",
+        subtitle: "P-0020 • Прапрадед по отцовской линии (V колено) • Середина XIX века",
+        bio: `<p>Крестьянин деревни Ивачево (Уварово) Лобановской волости Бронницкого уезда Московской губернии.</p>
+              <p><strong>Дети:</strong> Александра Ивановна (Рыбина), Григорий Иванович Рыбин, Александр Иванович Рыбин (1889 г.р.).</p>`,
+        evidence: "<p><strong>Артефакты A-0010, A-0014, A-0016:</strong> Восприемник Григорий Иванович и архивно-следственные дела Лобановской волости, справочник РГАДА.</p>",
+        tasks: "<ul><li>ЦГА Москвы (ЦИАМ): Ревизские сказки 10-й ревизии 1858 г. по Бронницкому уезду (фонд 51).</li><li>РГАДА (Москва): Фонд 708 (Бронницкий городовой магистрат, 1782–1800 гг.) и Фонд 350 (Ревизии 1719–1762 гг. по Бронницкому стану).</li></ul>"
+      },
+      alexandr_rybin: {
+        title: "Рыбин Александр Иванович",
+        subtitle: "P-0022 • Брат прабабушки Александры • 1889 г.р.",
+        bio: `<p>Фигурирует в материалах по Лобановской волости Бронницкого уезда, включая дело П-70795.</p>
+              <p>Семейная связь с Александрой Ивановной и Григорием Ивановичем Рыбиными пока требует проверки листами дела, а не только сводным описанием.</p>`,
+        evidence: "<p><strong>Артефакт A-0014:</strong> Открытая архивная база и ссылка на дело П-70795.</p>",
+        tasks: "<ul><li>Получить листы дела П-70795, установить состав семьи, дату и основание привлечения.</li></ul>"
+      },
+      grigory_rybin: {
+        title: "Рыбин Григорий Иванович",
+        subtitle: "P-0021 • Двоюродный дед • Брат прабабушки Александры",
+        bio: `<p>Крестьянин деревни Ивачево Лобановской волости Бронницкого уезда Московской губернии.</p>
+              <p>22 января 1914 года в Москве выступил крестным отцом новорожденного племянника Аркадия Владимирова.</p>
+              <p>Личность удостоверена священником по личному паспорту № 43 от 1913 года.</p>`,
+        evidence: "<p><strong>Артефакт A-0010:</strong> Подлинная метрическая запись № 19 за 1914 г.</p>",
+        tasks: "<ul><li>Поиск паспорта № 43 в фондах Бронницкого уездного полицейского управления или волостного правления.</li></ul>"
+      },
+      lykov: {
+        title: "Лыков [имя не установлено]",
+        subtitle: "P-0024 • Канцелярский чиновник • муж Ольги Николаевны",
+        bio: `<p>В метрической записи № 19 за 1914 год упомянут как «канцелярский чиновник Лыков», супруг Ольги Николаевны [Ляковой/Лыковой?].</p>
+              <p>Имя, отчество, должность, учреждение и адрес пока не установлены.</p>`,
+        evidence: "<p><strong>Артефакт A-0010:</strong> Упоминание в подлинной метрической записи; отдельный документ на самого чиновника не найден.</p>",
+        tasks: "<ul><li>Искать формулярные списки и адресные справочники Москвы 1913–1916 гг. по вариантам Лыков/Ляков.</li></ul>"
+      },
+      lykova: {
+        title: "Ольга Николаевна [Лякова/Лыкова?]",
+        subtitle: "P-0023 • Крестная мать Аркадия Владимирова (1914 г.) • чтение фамилии требует сверки",
+        bio: `<p>В записи № 19 названа женой канцелярского чиновника Лыкова; фамилия самой восприемницы на текущем чтении скана требует проверки: <strong>Лякова или Лыкова</strong>.</p>
+              <p>22 января 1914 года в Москве стала духовной восприемницей (крестной) новорожденного Аркадия Владимирова вместе с крестьянином Григорием Ивановичем Рыбиным.</p>`,
+        evidence: "<p><strong>Артефакт A-0010:</strong> Подлинная актовая запись № 19 метрической книги за 1914 г. ЦГА Москвы.</p>",
+        tasks: "<ul><li>Поиск формулярного списка чиновника Лыкова в ЦГА Москвы (фонд 54 Московского губернского правления) — формуляр всегда содержит девичью фамилию жены!</li><li>Поиск записи о браке Лыкова и Ольги Николаевны в приходских церквях Москвы.</li></ul>"
+      },
+      ivan_anc: {
+        title: "Владимиров Иван",
+        subtitle: "P-0013 • Прапрадед по отцовской линии (V колено) • Середина XIX века",
+        bio: `<p><strong>Сословие:</strong> Города Владимира мещанин.</p>
+              <p><strong>Сын:</strong> Василий Иванович Владимиров (~1875–1895 г.р.).</p>
+              <p><strong>Внук:</strong> Аркадий Васильевич Владимиров (1914 г.р.).</p>`,
+        evidence: "<p><strong>Артефакты A-0010, A-0016:</strong> Метрика 1914 г., Справочник фондов РГАДА (1979 г., с. 107).</p>",
+        tasks: "<ul><li>ГАВО (г. Владимир): Ревизские сказки 1858 г. по мещанам г. Владимира (фонд 401).</li><li>РГАДА (Москва): Фонд 715 (Владимирский городовой магистрат, 1727–1798 гг.) и Фонд 714 (Владимирская ратуша, 1700–1727 гг.) — для поиска корней рода Владимировых в XVIII веке!</li><li>РГАДА: Фонд 350 (1-я, 2-я и 3-я ревизии 1719–1762 гг. по г. Владимиру).</li></ul>"
+      },
+      simon: {
+        title: "Акимов Симон",
+        subtitle: "P-0011 • Прадед по материнской линии",
+        bio: "<p>Отец Акимова Ивана Симоновича. Носитель редкого христианского имени Симон.</p>",
+        evidence: "<p>Артефакты A-0004, A-0006.</p>",
+        tasks: "<ul><li>Поиск в оцифрованных адресных справочниках и фондах ЦГА Москвы.</li></ul>"
+      },
+      mikhail: {
+        title: "Владимиров Михаил Валерьевич",
+        subtitle: "P-0004 • Брат пробанда",
+        bio: "<p><strong>Дата рождения:</strong> 12 апреля 1976 года</p><p><strong>Место рождения:</strong> Москва</p><p>Полнородный брат Антона Валерьевича.</p>",
+        evidence: "<p>Артефакт A-0002.</p>",
+        tasks: "<ul><li>Данные зафиксированы.</li></ul>"
+      },
+      marya: {
+        title: "Владимирова Марья Антоновна",
+        subtitle: "P-0005 • Дочь пробанда",
+        bio: "<p><strong>Дата рождения:</strong> 30 июня 2007 года</p>",
+        evidence: "<p>Артефакт A-0002. Данные минимизированы согласно протоколу защиты живых лиц.</p>",
+        tasks: "<ul><li>Данные зафиксированы в древе.</li></ul>"
+      },
+      anatoliy: {
+        title: "Владимиров Анатолий Аркадьевич",
+        subtitle: "P-0017 • Дядя пробанда по отцовской линии",
+        bio: "<p>Сын Аркадия Васильевича Владимирова и Ольги Михайловны Владимировой. Родной брат Валерия Аркадьевича.</p><p><strong>Дети:</strong> сын Петр, дочь Жанна (Набережных).</p>",
+        evidence: "<p><strong>Артефакт A-0012:</strong> Свидетельство племянника (пробанда).</p>",
+        tasks: "<ul><li>Сведения внесены в боковую ветвь отцовской линии.</li></ul>"
+      },
+      irina: {
+        title: "Акимова Ирина Ивановна",
+        subtitle: "P-0015 • Тетя пробанда по материнской линии",
+        bio: "<p>Дочь Ивана Симоновича Акимова и Галины (Мурановой) Акимовой. Родная сестра Елизаветы Ивановны.</p><p><strong>Сын:</strong> Александр Игоревич Акимов (22.01.1973).</p>",
+        evidence: "<p><strong>Артефакт A-0012:</strong> Свидетельство племянника (пробанда).</p>",
+        tasks: "<ul><li>Сведения внесены в боковую ветвь материнской линии.</li></ul>"
+      },
+      petr: {
+        title: "Владимиров Петр Анатольевич",
+        subtitle: "P-0018 • Двоюродный брат по отцовской линии",
+        bio: "<p>Сын Анатолия Аркадьевича Владимирова. Двоюродный брат Антона Валерьевича.</p>",
+        evidence: "<p><strong>Артефакт A-0012:</strong> Семейное свидетельство.</p>",
+        tasks: "<ul><li>Данные зафиксированы.</li></ul>"
+      },
+      zhanna: {
+        title: "Набережных (Владимирова) Жанна Анатольевна",
+        subtitle: "P-0019 • Двоюродная сестра по отцовской линии",
+        bio: "<p>Дочь Анатолия Аркадьевича Владимирова. Двоюродная сестра Антона Валерьевича. В браке — Набережных.</p>",
+        evidence: "<p><strong>Артефакт A-0012:</strong> Семейное свидетельство.</p>",
+        tasks: "<ul><li>Данные зафиксированы.</li></ul>"
+      },
+      aleksandr_akim: {
+        title: "Акимов Александр Игоревич",
+        subtitle: "P-0016 • Двоюродный брат по материнской линии",
+        bio: "<p><strong>Дата рождения:</strong> 22 января 1973 года.</p><p>Сын Ирины Ивановны Акимовой. Двоюродный брат Антона Валерьевича.</p>",
+        evidence: "<p><strong>Артефакт A-0012:</strong> Семейное свидетельство.</p>",
+        tasks: "<ul><li>Данные зафиксированы.</li></ul>"
+      }
+    };
+
+    function showPerson(key) {
+      const p = data[key];
+      if (!p) return;
+      document.getElementById('modalTitle').innerText = p.title;
+      document.getElementById('modalSubtitle').innerText = p.subtitle;
+      document.getElementById('modalBioContent').innerHTML = p.bio;
+      document.getElementById('modalEvidenceContent').innerHTML = p.evidence;
+      document.getElementById('modalTasksContent').innerHTML = p.tasks;
+      document.getElementById('modalBackdrop').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalBackdrop').style.display = 'none';
+    }
+
+    function filterBranch(branch) {
+      const pats = document.querySelectorAll('.branch-pat');
+      const mats = document.querySelectorAll('.branch-mat');
+      if (branch === 'all') {
+        pats.forEach(el => el.style.opacity = '1');
+        mats.forEach(el => el.style.opacity = '1');
+      } else if (branch === 'pat') {
+        pats.forEach(el => el.style.opacity = '1');
+        mats.forEach(el => el.style.opacity = '0.2');
+      } else if (branch === 'mat') {
+        pats.forEach(el => el.style.opacity = '0.2');
+        mats.forEach(el => el.style.opacity = '1');
+      }
+    }
+  </script>
+</body>
+</html>

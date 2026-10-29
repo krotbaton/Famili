@@ -1,0 +1,20 @@
+# Local/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Original uploaded attachments and temporary extraction files
+*.pdf
+*.tif
+
+# Runtime secrets and credentials
+.env
+.env.*
+!.env.example
+
+# Python caches
+__pycache__/
+*.pyc
