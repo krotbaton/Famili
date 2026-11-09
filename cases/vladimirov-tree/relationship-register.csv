@@ -16,7 +16,7 @@ R-0014,P-0011,parent,P-0008,biological-legal,C-0013,A-0004,,IG-USER,unresolved,l
 R-0015,P-0012,parent,P-0006,biological-legal,C-0021,A-0010,,IG-METRIC,single-source,high,Прабабушка пробанда по отцу (Александра Ивановна -> Аркадий)
 R-0016,P-0010,spouse,P-0012,legal,C-0020;C-0021,A-0010,,IG-METRIC,unresolved,medium,Брак мещанина Василия Ивановича Владимирова и Александры Ивановны
 R-0017,P-0013,parent,P-0010,biological-legal,C-0022,A-0010,,IG-METRIC,unresolved,low,Прапрадед пробанда по отцу (Иван Владимиров -> Василий Иванович)
-R-0018,P-0014,parent,P-0009,biological-legal,C-0025,A-0011,,IG-USER,single-source,high,Прадед пробанда по матери (Муранов -> Галина Муранова)
+R-0018,P-0014,parent,P-0009,biological-legal,C-0025;C-0040,A-0011;A-0030,,IG-USER,single-source,high,Прадед пробанда по матери (Иван Муранов -> Галина Ивановна Муранова)
 R-0019,P-0008,parent,P-0015,biological-legal,C-0026,A-0012,,IG-USER,single-source,high,Дед субъекта по матери (Иван Симонович -> Ирина Ивановна)
 R-0020,P-0009,parent,P-0015,biological-legal,C-0026,A-0012,,IG-USER,single-source,high,Бабушка субъекта по матери (Галина -> Ирина Ивановна)
 R-0021,P-0015,parent,P-0016,biological-legal,C-0027,A-0012,,IG-USER,single-source,high,Тетя субъекта (Ирина Ивановна -> Александр Игоревич)
